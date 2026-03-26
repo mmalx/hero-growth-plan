@@ -1,0 +1,2007 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>勇者成长计划 — 家庭激励系统</title>
+<meta name="description" content="勇者成长计划是一款赛博朋克风格的家庭激励H5应用">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="勇者成长">
+<meta name="theme-color" content="#0a0a1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   CSS RESET & VARIABLES
+   ============================================ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-primary: #0a0a1a;
+  --bg-card: rgba(16, 16, 36, 0.88);
+  --bg-card-hover: rgba(24, 24, 52, 0.92);
+  --neon-blue: #00f0ff;
+  --neon-green: #39ff14;
+  --neon-pink: #ff00ff;
+  --neon-gold: #ffd700;
+  --neon-outdoor: #00ff88;
+  --text-primary: #e8e8f0;
+  --text-secondary: #8888aa;
+  --text-dim: #555570;
+  --border-color: rgba(100, 100, 160, 0.2);
+  --glass-blur: 12px;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --font-title: 'Orbitron', sans-serif;
+  --font-body: 'Noto Sans SC', sans-serif;
+}
+
+html {
+  font-size: 16px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ============================================
+   BACKGROUND EFFECTS 
+   ============================================ */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 240, 255, 0.015) 2px,
+      rgba(0, 240, 255, 0.015) 4px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--neon-blue), var(--neon-pink), transparent);
+  opacity: 0.4;
+  animation: scanline 6s linear infinite;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+@keyframes scanline {
+  0% { top: -3px; }
+  100% { top: 100vh; }
+}
+
+/* Grid background */
+.grid-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ambient glow orbs */
+.ambient-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ambient-orb.orb-1 {
+  width: 300px; height: 300px;
+  background: var(--neon-blue);
+  top: -50px; right: -80px;
+  animation: orbFloat 12s ease-in-out infinite alternate;
+}
+
+.ambient-orb.orb-2 {
+  width: 250px; height: 250px;
+  background: var(--neon-pink);
+  bottom: 20%; left: -60px;
+  animation: orbFloat 15s ease-in-out infinite alternate-reverse;
+}
+
+.ambient-orb.orb-3 {
+  width: 200px; height: 200px;
+  background: var(--neon-green);
+  top: 40%; right: -40px;
+  animation: orbFloat 10s ease-in-out infinite alternate;
+}
+
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(20px, 30px) scale(1.15); }
+  100% { transform: translate(-10px, -20px) scale(0.9); }
+}
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+.app-container {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 16px 32px;
+  min-height: 100vh;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.app-header {
+  text-align: center;
+  padding: 28px 0 20px;
+  position: relative;
+}
+
+.app-title {
+  font-family: var(--font-title);
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink), var(--neon-gold));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
+  text-shadow: none;
+  position: relative;
+}
+
+.app-title::after {
+  content: '勇者成长计划';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: -1;
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: blur(12px);
+  opacity: 0.5;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.app-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  letter-spacing: 4px;
+  font-family: var(--font-title);
+}
+
+/* ============================================
+   COIN BAR
+   ============================================ */
+.coin-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(var(--glass-blur));
+  position: relative;
+  overflow: hidden;
+}
+
+.coin-bar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-gold), transparent);
+  opacity: 0.6;
+}
+
+.coin-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coin-icon {
+  font-size: 1.8rem;
+  animation: coinPulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+}
+
+@keyframes coinPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5)); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.8)); }
+}
+
+.coin-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-family: var(--font-title);
+  letter-spacing: 1px;
+}
+
+.coin-amount {
+  font-family: var(--font-title);
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--neon-gold);
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+}
+
+.exchange-btn {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: var(--neon-gold);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.exchange-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.exchange-btn:hover::before,
+.exchange-btn:active::before {
+  left: 100%;
+}
+
+.exchange-btn:hover,
+.exchange-btn:active {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.1));
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+  transform: scale(1.03);
+}
+
+.exchange-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.exchange-btn:disabled:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+/* ============================================
+   SECTION TITLES
+   ============================================ */
+.section-title {
+  font-family: var(--font-title);
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+  padding-left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 16px;
+  background: linear-gradient(180deg, var(--neon-blue), var(--neon-pink));
+  border-radius: 2px;
+}
+
+/* ============================================
+   ATTRIBUTE CARDS
+   ============================================ */
+.attributes-section {
+  margin-bottom: 24px;
+}
+
+.attr-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(var(--glass-blur));
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.attr-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  opacity: 0.7;
+}
+
+.attr-card[data-attr="intelligence"]::before {
+  background: linear-gradient(90deg, var(--neon-blue), transparent);
+}
+.attr-card[data-attr="strength"]::before {
+  background: linear-gradient(90deg, var(--neon-green), transparent);
+}
+.attr-card[data-attr="charisma"]::before {
+  background: linear-gradient(90deg, var(--neon-pink), transparent);
+}
+
+.attr-card:hover {
+  border-color: rgba(100, 100, 180, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.attr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.attr-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.attr-name .attr-emoji {
+  font-size: 1.3rem;
+}
+
+.attr-level {
+  font-family: var(--font-title);
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.attr-card[data-attr="intelligence"] .attr-level {
+  color: var(--neon-blue);
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+}
+.attr-card[data-attr="strength"] .attr-level {
+  color: var(--neon-green);
+  background: rgba(57, 255, 20, 0.1);
+  border: 1px solid rgba(57, 255, 20, 0.3);
+}
+.attr-card[data-attr="charisma"] .attr-level {
+  color: var(--neon-pink);
+  background: rgba(255, 0, 255, 0.1);
+  border: 1px solid rgba(255, 0, 255, 0.3);
+}
+
+.progress-bar-wrapper {
+  position: relative;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 12px;
+  position: relative;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.15) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.attr-card[data-attr="intelligence"] .progress-bar-fill {
+  background: linear-gradient(90deg, rgba(0,180,220,0.6), var(--neon-blue));
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.attr-card[data-attr="strength"] .progress-bar-fill {
+  background: linear-gradient(90deg, rgba(20,180,10,0.6), var(--neon-green));
+  box-shadow: 0 0 12px rgba(57, 255, 20, 0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.attr-card[data-attr="charisma"] .progress-bar-fill {
+  background: linear-gradient(90deg, rgba(180,0,180,0.6), var(--neon-pink));
+  box-shadow: 0 0 12px rgba(255, 0, 255, 0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-title);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  z-index: 1;
+  letter-spacing: 1px;
+}
+
+/* ============================================
+   TASKS SECTION
+   ============================================ */
+.tasks-section {
+  margin-bottom: 24px;
+}
+
+.task-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(var(--glass-blur));
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.task-card:hover {
+  border-color: rgba(100, 100, 180, 0.35);
+}
+
+/* Outdoor task highlight */
+.task-card.outdoor-task {
+  border-color: rgba(0, 255, 136, 0.3);
+  background: linear-gradient(135deg, var(--bg-card), rgba(0, 255, 136, 0.04));
+}
+
+.task-card.outdoor-task::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--neon-outdoor), transparent);
+  opacity: 0.7;
+}
+
+.task-card.outdoor-task:hover {
+  border-color: rgba(0, 255, 136, 0.5);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+}
+
+/* Double reward task highlight */
+.task-card.double-reward {
+  border-color: rgba(255, 215, 0, 0.35);
+  background: linear-gradient(135deg, var(--bg-card), rgba(255, 215, 0, 0.05), rgba(0, 255, 136, 0.03));
+  animation: doubleRewardGlow 3s ease-in-out infinite;
+}
+
+@keyframes doubleRewardGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 215, 0, 0.1); }
+  50% { box-shadow: 0 0 22px rgba(255, 215, 0, 0.18), 0 0 40px rgba(0, 255, 136, 0.06); }
+}
+
+.task-card.double-reward::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--neon-gold), var(--neon-outdoor), transparent);
+  opacity: 0.8;
+}
+
+.task-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.task-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.task-tag {
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-family: var(--font-title);
+  letter-spacing: 0.5px;
+}
+
+.tag-outdoor {
+  color: var(--neon-outdoor);
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.tag-double {
+  color: var(--neon-gold);
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  animation: tagPulse 2s ease-in-out infinite;
+}
+
+@keyframes tagPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.task-reward {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-reward span {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.reward-attr {
+  color: var(--neon-blue);
+}
+
+.task-card[data-attr="strength"] .reward-attr {
+  color: var(--neon-green);
+}
+
+.task-card[data-attr="charisma"] .reward-attr {
+  color: var(--neon-pink);
+}
+
+.reward-coin {
+  color: var(--neon-gold);
+}
+
+.task-score-badge {
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  background: rgba(57, 255, 20, 0.1);
+  border: 1px solid rgba(57, 255, 20, 0.3);
+  color: var(--neon-green);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 4px;
+}
+
+.checkin-btn {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(0, 240, 255, 0.04));
+  color: var(--neon-blue);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  margin-left: 12px;
+}
+
+.checkin-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.15), transparent);
+  transition: left 0.4s ease;
+}
+
+.checkin-btn:hover::before,
+.checkin-btn:active::before {
+  left: 100%;
+}
+
+.checkin-btn:hover,
+.checkin-btn:active {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(0, 240, 255, 0.08));
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.2);
+  transform: scale(1.04);
+}
+
+.checkin-btn.checked {
+  background: rgba(57, 255, 20, 0.1);
+  border-color: rgba(57, 255, 20, 0.4);
+  color: var(--neon-green);
+  cursor: default;
+  transform: none;
+}
+
+.checkin-btn.checked::before {
+  display: none;
+}
+
+.checkin-btn.checked:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+/* ============================================
+   RATING MODAL
+   ============================================ */
+.rating-modal-box {
+  background: linear-gradient(135deg, rgba(16, 16, 36, 0.98), rgba(24, 20, 40, 0.98));
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  animation: modalIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.rating-modal-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--neon-blue), var(--neon-pink), transparent);
+}
+
+.rating-task-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.rating-task-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.rating-scores {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.score-btn {
+  min-width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0 6px;
+}
+
+.score-btn:hover {
+  border-color: rgba(0,240,255,0.4);
+  background: rgba(0,240,255,0.06);
+}
+
+.score-btn.active {
+  background: rgba(0,240,255,0.2);
+  border-color: var(--neon-blue);
+  color: var(--neon-blue);
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(0,240,255,0.2);
+}
+
+.score-btn.negative {
+  color: #ff7777;
+  border-color: rgba(255,85,85,0.2);
+}
+
+.score-btn.negative:hover {
+  border-color: rgba(255,85,85,0.4);
+  background: rgba(255,85,85,0.06);
+}
+
+.score-btn.negative.active {
+  background: rgba(255,85,85,0.2);
+  border-color: #ff5555;
+  color: #ff5555;
+  box-shadow: 0 0 12px rgba(255,85,85,0.2);
+}
+
+.score-btn.zero {
+  color: var(--text-dim);
+}
+
+.rating-preview {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+}
+
+.rating-preview-item {
+  text-align: center;
+}
+
+.rating-preview-label {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  font-family: var(--font-title);
+  letter-spacing: 0.5px;
+}
+
+.rating-preview-value {
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.rating-preview-value.attr-val {
+  color: var(--neon-blue);
+}
+
+.rating-preview-value.coin-val {
+  color: var(--neon-gold);
+}
+
+.rating-confirm-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.08));
+  border: 1px solid rgba(0, 240, 255, 0.5);
+  color: var(--neon-blue);
+  position: relative;
+  overflow: hidden;
+}
+
+.rating-confirm-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.rating-confirm-btn:not(:disabled):hover {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.35), rgba(0, 240, 255, 0.15));
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+  transform: scale(1.02);
+}
+
+.rating-cancel-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.2s;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+}
+
+.rating-cancel-link:hover {
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   ADVENTURE LOG
+   ============================================ */
+.log-section {
+  margin-bottom: 24px;
+}
+
+.log-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  max-height: 260px;
+  overflow-y: auto;
+  backdrop-filter: blur(var(--glass-blur));
+  position: relative;
+  scroll-behavior: smooth;
+}
+
+.log-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink), transparent);
+  opacity: 0.5;
+}
+
+/* Scrollbar styling */
+.log-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.log-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.log-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.2);
+  border-radius: 2px;
+}
+
+.log-entry {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  animation: logFadeIn 0.5s ease;
+  opacity: 1;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+@keyframes logFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.log-time {
+  font-family: var(--font-title);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-right: 6px;
+  letter-spacing: 0.5px;
+}
+
+.log-empty {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 30px 0;
+  font-size: 0.85rem;
+}
+
+.log-empty .empty-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+/* ============================================
+   DATA MANAGEMENT SECTION
+   ============================================ */
+.data-section {
+  margin-bottom: 20px;
+}
+
+.data-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.data-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.reset-today-btn {
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  color: var(--neon-blue);
+}
+
+.reset-today-btn:hover {
+  background: rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.12);
+}
+
+.reset-all-btn {
+  background: rgba(255, 60, 60, 0.08);
+  border: 1px solid rgba(255, 60, 60, 0.25);
+  color: #ff5555;
+}
+
+.reset-all-btn:hover {
+  background: rgba(255, 60, 60, 0.15);
+  box-shadow: 0 0 14px rgba(255, 60, 60, 0.12);
+}
+
+/* ============================================
+   MODAL
+   ============================================ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-box {
+  background: linear-gradient(135deg, rgba(16, 16, 36, 0.98), rgba(24, 20, 40, 0.98));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  animation: modalIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--neon-gold), transparent);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.modal-title {
+  font-family: var(--font-title);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--neon-gold);
+}
+
+.modal-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 22px;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-btn.confirm {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.08));
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  color: var(--neon-gold);
+}
+
+.modal-btn.confirm:hover {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.35), rgba(255, 215, 0, 0.15));
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.2);
+}
+
+.modal-btn.cancel {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-secondary);
+}
+
+.modal-btn.cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-btn.danger {
+  background: linear-gradient(135deg, rgba(255, 60, 60, 0.2), rgba(255, 60, 60, 0.08));
+  border: 1px solid rgba(255, 60, 60, 0.5);
+  color: #ff5555;
+}
+
+.modal-btn.danger:hover {
+  background: linear-gradient(135deg, rgba(255, 60, 60, 0.35), rgba(255, 60, 60, 0.15));
+  box-shadow: 0 0 18px rgba(255, 60, 60, 0.2);
+}
+
+/* ============================================
+   COIN ANIMATION
+   ============================================ */
+.coin-fly {
+  position: fixed;
+  font-size: 1.6rem;
+  z-index: 9000;
+  pointer-events: none;
+  animation: coinFlyUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+}
+
+@keyframes coinFlyUp {
+  0% { opacity: 1; transform: scale(1) translateY(0); }
+  60% { opacity: 1; transform: scale(1.3) translateY(-60px); }
+  100% { opacity: 0; transform: scale(0.5) translateY(-120px); }
+}
+
+/* Level up flash */
+.level-up-flash {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 8000;
+  pointer-events: none;
+  animation: flashBoom 0.6s ease-out forwards;
+}
+
+@keyframes flashBoom {
+  0% { background: rgba(255, 255, 255, 0.3); }
+  100% { background: transparent; }
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.app-footer {
+  text-align: center;
+  padding: 16px 0;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  font-family: var(--font-title);
+  letter-spacing: 1px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 390px) {
+  .app-title {
+    font-size: 1.3rem;
+  }
+  .coin-amount {
+    font-size: 1.4rem;
+  }
+  .task-name {
+    font-size: 0.85rem;
+  }
+  .checkin-btn {
+    padding: 9px 14px;
+    font-size: 0.78rem;
+  }
+  .exchange-btn {
+    padding: 9px 12px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (min-width: 481px) {
+  .app-container {
+    padding: 0 24px 40px;
+  }
+  .app-title {
+    font-size: 1.8rem;
+  }
+}
+
+.date-display {
+  font-family: var(--font-title);
+  font-size: 0.72rem;
+  color: var(--neon-blue);
+  margin-top: 8px;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.history-section { margin-bottom: 24px; }
+
+.history-toggle {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.history-toggle:hover { border-color: rgba(0,240,255,0.3); }
+
+.history-panel {
+  display: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 14px 16px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.history-panel.open { display: block; }
+
+.history-day {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.history-day:last-child { border-bottom: none; margin-bottom: 0; }
+
+.history-date {
+  font-family: var(--font-title);
+  font-size: 0.7rem;
+  color: var(--neon-blue);
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.history-task {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  padding: 3px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.history-task .ht-stars { color: var(--neon-gold); font-size: 0.65rem; }
+
+.backup-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.backup-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  color: var(--neon-blue);
+}
+
+.backup-btn:hover {
+  background: rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.12);
+}
+
+.backup-btn.import-btn {
+  background: rgba(255, 215, 0, 0.08);
+  border-color: rgba(255, 215, 0, 0.25);
+  color: var(--neon-gold);
+}
+
+.backup-btn.import-btn:hover {
+  background: rgba(255, 215, 0, 0.15);
+}
+
+#importFile { display: none; }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="ambient-orb orb-1"></div>
+<div class="ambient-orb orb-2"></div>
+<div class="ambient-orb orb-3"></div>
+
+<div class="app-container">
+
+  <!-- Header -->
+  <header class="app-header">
+    <h1 class="app-title">勇者成长计划</h1>
+    <p class="app-subtitle">HERO GROWTH PLAN</p>
+    <div class="date-display" id="dateDisplay"></div>
+  </header>
+
+  <!-- Score Bar -->
+  <section class="coin-bar" id="coinBar">
+    <div class="coin-info">
+      <span class="coin-icon">🏆</span>
+      <div>
+        <div class="coin-label">分数</div>
+        <div class="coin-amount" id="coinAmount">0</div>
+      </div>
+    </div>
+    <button class="exchange-btn" id="exchangeBtn" onclick="openExchangeModal()">
+      🎮 兑换游戏时间
+    </button>
+  </section>
+
+  <!-- Attributes Section -->
+  <section class="attributes-section">
+    <div class="section-title">📊 勇者属性</div>
+    
+    <div class="attr-card" data-attr="intelligence" id="attrIntelligence">
+      <div class="attr-header">
+        <div class="attr-name">
+          <span class="attr-emoji">🧠</span>
+          <span>智力</span>
+        </div>
+        <span class="attr-level" id="intLevel">Lv.0</span>
+      </div>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar-fill" id="intBar" style="width: 0%"></div>
+        <div class="progress-text" id="intText">0 / 100</div>
+      </div>
+    </div>
+
+    <div class="attr-card" data-attr="strength" id="attrStrength">
+      <div class="attr-header">
+        <div class="attr-name">
+          <span class="attr-emoji">💪</span>
+          <span>体能</span>
+        </div>
+        <span class="attr-level" id="strLevel">Lv.0</span>
+      </div>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar-fill" id="strBar" style="width: 0%"></div>
+        <div class="progress-text" id="strText">0 / 100</div>
+      </div>
+    </div>
+
+    <div class="attr-card" data-attr="charisma" id="attrCharisma">
+      <div class="attr-header">
+        <div class="attr-name">
+          <span class="attr-emoji">✨</span>
+          <span>魅力</span>
+        </div>
+        <span class="attr-level" id="chaLevel">Lv.0</span>
+      </div>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar-fill" id="chaBar" style="width: 0%"></div>
+        <div class="progress-text" id="chaText">0 / 100</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tasks Section -->
+  <section class="tasks-section">
+    <div class="section-title">📋 每日任务</div>
+    <div id="taskList"></div>
+  </section>
+
+  <!-- Adventure Log -->
+  <section class="log-section">
+    <div class="section-title">📜 冒险日志</div>
+    <div class="log-container" id="logContainer">
+      <div class="log-empty" id="logEmpty">
+        <span class="empty-icon">🗺️</span>
+        冒险尚未开始…去完成任务吧！
+      </div>
+    </div>
+  </section>
+
+  <!-- History Section -->
+  <section class="history-section">
+    <div class="section-title">📅 历史记录</div>
+    <button class="history-toggle" id="historyToggle" onclick="toggleHistory()">
+      <span>查看过去打卡记录</span>
+      <span id="historyArrow">▼</span>
+    </button>
+    <div class="history-panel" id="historyPanel"></div>
+  </section>
+
+  <!-- Data Management -->
+  <section class="data-section">
+    <div class="section-title">⚙️ 数据管理</div>
+    <div class="data-actions">
+      <button class="data-btn reset-today-btn" onclick="openResetTodayModal()">🔄 重置今日打卡</button>
+      <button class="data-btn reset-all-btn" onclick="openResetAllModal()">🗑️ 清空所有数据</button>
+    </div>
+    <div class="backup-actions">
+      <button class="backup-btn" onclick="exportData()">📤 导出备份</button>
+      <button class="backup-btn import-btn" onclick="document.getElementById('importFile').click()">📥 导入备份</button>
+      <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+    </div>
+  </section>
+
+  <footer class="app-footer">
+    HERO GROWTH PLAN v1.0 · POWERED BY FAMILY LOVE
+  </footer>
+</div>
+
+<!-- Exchange Modal -->
+<div class="modal-overlay" id="exchangeModal">
+  <div class="modal-box">
+    <span class="modal-icon">🎮</span>
+    <div class="modal-title">兑换游戏时间</div>
+    <div class="modal-text">每 <strong style="color:var(--neon-gold)">2分</strong> = <strong style="color:var(--neon-blue)">1分钟</strong>游戏时间</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin:16px 0">
+      <button class="modal-btn cancel" style="flex:0;width:48px;padding:10px;font-size:1.2rem" onclick="changeExchangeQty(-1)">➖</button>
+      <div style="text-align:center">
+        <div style="font-family:var(--font-title);font-size:2rem;font-weight:900;color:var(--neon-gold)" id="exchangeQty">1</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);font-family:var(--font-title)">TIMES</div>
+      </div>
+      <button class="modal-btn cancel" style="flex:0;width:48px;padding:10px;font-size:1.2rem" onclick="changeExchangeQty(1)">➕</button>
+    </div>
+    <div style="display:flex;justify-content:space-around;margin-bottom:18px;padding:10px;background:rgba(255,255,255,0.03);border-radius:8px">
+      <div style="text-align:center"><div style="font-size:0.65rem;color:var(--text-dim);font-family:var(--font-title)">COST</div><div style="font-family:var(--font-title);font-weight:700;color:var(--neon-gold)" id="exchangeCost">20</div></div>
+      <div style="text-align:center"><div style="font-size:0.65rem;color:var(--text-dim);font-family:var(--font-title)">TIME</div><div style="font-family:var(--font-title);font-weight:700;color:var(--neon-blue)" id="exchangeTime">30min</div></div>
+      <div style="text-align:center"><div style="font-size:0.65rem;color:var(--text-dim);font-family:var(--font-title)">BALANCE</div><div style="font-family:var(--font-title);font-weight:700;color:var(--text-secondary)" id="exchangeBalance">0</div></div>
+    </div>
+    <div id="exchangeWarning" style="font-size:0.78rem;color:#ff5555;margin-bottom:12px;display:none">分数不足！</div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('exchangeModal')">取消</button>
+      <button class="modal-btn confirm" id="exchangeConfirmBtn" onclick="confirmExchange()">确认兑换</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Today Modal -->
+<div class="modal-overlay" id="resetTodayModal">
+  <div class="modal-box">
+    <span class="modal-icon">🔄</span>
+    <div class="modal-title" style="color: var(--neon-blue);">重置今日打卡</div>
+    <div class="modal-text">
+      将清空今日所有打卡记录，属性和分数不受影响。确认吗？
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('resetTodayModal')">取消</button>
+      <button class="modal-btn confirm" onclick="confirmResetToday()">确认重置</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset All Modal -->
+<div class="modal-overlay" id="resetAllModal">
+  <div class="modal-box">
+    <span class="modal-icon">⚠️</span>
+    <div class="modal-title" style="color: #ff5555;">清空所有数据</div>
+    <div class="modal-text">
+      此操作将清空所有属性、分数、日志和打卡记录，<strong style="color: #ff5555;">且无法撤销</strong>！
+    </div>
+    <div style="margin:12px 0">
+      <div style="font-size:0.78rem;color:var(--text-dim);margin-bottom:6px">请输入密码确认：</div>
+      <input type="password" id="resetPassword" placeholder="输入密码" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,85,85,0.3);border-radius:8px;color:var(--text-primary);font-size:1rem;text-align:center;font-family:var(--font-title);letter-spacing:4px;box-sizing:border-box">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('resetAllModal')">取消</button>
+      <button class="modal-btn danger" onclick="confirmResetAll()">确认清空</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rating Modal -->
+<div class="modal-overlay" id="ratingModal">
+  <div class="rating-modal-box">
+    <span class="modal-icon" id="ratingTaskEmoji">⚔️</span>
+    <div class="rating-task-name" id="ratingTaskName">任务名称</div>
+    <div class="rating-task-desc" id="ratingTaskDesc">请根据完成质量为本次任务打分</div>
+    
+    <div class="rating-scores" id="ratingScores">
+      <!-- Score buttons generated dynamically -->
+    </div>
+    
+    <div class="rating-preview">
+      <div class="rating-preview-item">
+        <div class="rating-preview-label">属性</div>
+        <div class="rating-preview-value attr-val" id="ratingPreviewAttr">-</div>
+      </div>
+      <div class="rating-preview-item">
+        <div class="rating-preview-label">得分</div>
+        <div class="rating-preview-value coin-val" id="ratingPreviewCoins">-</div>
+      </div>
+    </div>
+    
+    <button class="rating-confirm-btn" id="ratingConfirmBtn" onclick="confirmRating()" disabled>请先选择分数</button>
+    <button class="rating-cancel-link" onclick="closeModal('ratingModal')">取消</button>
+  </div>
+</div>
+
+<script>
+// ============================================
+// DATA & CONFIG
+// ============================================
+const STORAGE_KEY = 'hero_growth_plan_data';
+const EXCHANGE_COST = 2;
+const EXCHANGE_MINUTES = 1;
+const MAX_LOGS = 100;
+
+const TASKS = [
+  // === 智力 ===
+  { id: 'school_hw',  name: '校内作业完成情况', emoji: '📝', attr: 'intelligence', type: 'daily',
+    scoreOptions: [1,2,3,4,5],
+    ratingDesc: '1 拖拉/多错 | 3 基本完成 | 5 认真工整·正确率高' },
+  { id: 'extra_hw',   name: '课外作业完成情况', emoji: '📖', attr: 'intelligence', type: 'daily',
+    scoreOptions: [1,2,3,4,5],
+    ratingDesc: '1 应付了事 | 3 基本完成 | 5 主动完成·质量高' },
+  { id: 'reading',    name: '阅读习惯培养',     emoji: '📚', attr: 'intelligence', type: 'daily',
+    scoreOptions: [1,2,3,4,5],
+    ratingDesc: '1 心不在焉 | 3 坚持30分钟 | 5 专注阅读·能复述' },
+  // === 体能 ===
+  { id: 'football',   name: '足球训练情况',     emoji: '⚽', attr: 'strength', type: 'daily',
+    scoreOptions: [1,2,3,4,5],
+    ratingDesc: '1 消极应付 | 3 认真参与 | 5 积极拼搏·表现出色' },
+  { id: 'daily_sport', name: '当日运动情况',    emoji: '🚴', attr: 'strength', type: 'daily',
+    scoreOptions: [1,2,3,4,5],
+    ratingDesc: '1 简单动了动 | 3 骑车/跳绳30分钟 | 5 充足运动1小时+' },
+  // === 魅力 ===
+  { id: 'helping',    name: '主动帮助家人',     emoji: '🤝', attr: 'charisma', type: 'daily',
+    scoreOptions: [1,2,3,4,5],
+    ratingDesc: '1 催促后做 | 3 提醒后完成 | 5 主动做家务' },
+  { id: 'behavior',   name: '行为习惯评估',     emoji: '🏠', attr: 'charisma', type: 'daily',
+    scoreOptions: [-5,-4,-3,-2,-1,1,2,3,4,5],
+    ratingDesc: '-5 乱丢东西/不刷牙/撒谎 | 0 基本做到 | +5 自觉整理' },
+  { id: 'attitude',   name: '态度情况评估',     emoji: '😊', attr: 'charisma', type: 'daily',
+    scoreOptions: [-5,-4,-3,-2,-1,1,2,3,4,5],
+    ratingDesc: '-5 大吼大叫/撒泼 | 0 基本配合 | +5 尊重人·情绪好' },
+  // === 额外奖励 ===
+  { id: 'family_outdoor', name: '全家集体户外活动', emoji: '🌳', attr: 'strength', type: 'bonus',
+    scoreOptions: [1,2,3,4,5,6,7,8,9,10],
+    ratingDesc: '1 不太积极 | 5 开心参与 | 10 全程积极·带动气氛' },
+];
+
+const ATTR_NAMES = {
+  intelligence: '智力',
+  strength: '体能',
+  charisma: '魅力'
+};
+
+const ATTR_EMOJIS = {
+  intelligence: '🧠',
+  strength: '💪',
+  charisma: '✨'
+};
+
+// ============================================
+// STATE MANAGEMENT
+// ============================================
+function getDefaultData() {
+  return {
+    attributes: {
+      intelligence: { level: 0, progress: 0 },
+      strength:     { level: 0, progress: 0 },
+      charisma:     { level: 0, progress: 0 },
+    },
+    coins: 125,
+    logs: [],
+    history: [],
+    dailyCheckins: {
+      date: getTodayStr(),
+      tasks: {}
+    }
+  };
+}
+
+function getTodayStr() {
+  const now = new Date();
+  return now.getFullYear() + '-' + 
+         String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+         String(now.getDate()).padStart(2, '0');
+}
+
+function getTimeStr() {
+  const now = new Date();
+  return String(now.getHours()).padStart(2, '0') + ':' + 
+         String(now.getMinutes()).padStart(2, '0');
+}
+
+function getDateTimeStr() {
+  const now = new Date();
+  return (now.getMonth() + 1) + '-' + 
+         String(now.getDate()).padStart(2, '0') + ' ' + getTimeStr();
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return getDefaultData();
+    const data = JSON.parse(raw);
+    if (!data.attributes || !data.dailyCheckins) return getDefaultData();
+    if (!data.history) data.history = [];
+    // One-time migration: set initial score to 125 (pre-existing manual tracking)
+    if (!data._migrated125) {
+      data.coins = 125;
+      data._migrated125 = true;
+    }
+    // Archive yesterday's data if date changed
+    if (data.dailyCheckins.date !== getTodayStr()) {
+      const oldTasks = data.dailyCheckins.tasks;
+      const hasAny = Object.keys(oldTasks).some(k => oldTasks[k] && oldTasks[k].done);
+      if (hasAny) {
+        data.history.unshift({
+          date: data.dailyCheckins.date,
+          tasks: JSON.parse(JSON.stringify(oldTasks))
+        });
+        if (data.history.length > 30) data.history = data.history.slice(0, 30);
+      }
+      data.dailyCheckins = { date: getTodayStr(), tasks: {} };
+    }
+    return data;
+  } catch (e) {
+    return getDefaultData();
+  }
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+let gameData = loadData();
+
+// ============================================
+// UI RENDERING
+// ============================================
+function renderAll() {
+  renderDate();
+  renderCoins();
+  renderAttributes();
+  renderTasks();
+  renderLogs();
+  renderHistory();
+}
+
+function renderCoins() {
+  const el = document.getElementById('coinAmount');
+  el.textContent = gameData.coins;
+}
+
+function renderAttributes() {
+  renderAttr('intelligence', 'int');
+  renderAttr('strength', 'str');
+  renderAttr('charisma', 'cha');
+}
+
+function renderAttr(attrKey, prefix) {
+  const attr = gameData.attributes[attrKey];
+  document.getElementById(prefix + 'Level').textContent = 'Lv.' + attr.level;
+  document.getElementById(prefix + 'Bar').style.width = attr.progress + '%';
+  document.getElementById(prefix + 'Text').textContent = attr.progress + ' / 100';
+}
+
+function renderTasks() {
+  const container = document.getElementById('taskList');
+  container.innerHTML = '';
+  TASKS.forEach(function(task) {
+    const cd = gameData.dailyCheckins.tasks[task.id];
+    const isChecked = cd && cd.done === true;
+    const score = isChecked ? cd.rating : 0;
+    const isBonus = task.type === 'bonus';
+    let cardClass = 'task-card';
+    if (isBonus) cardClass += ' outdoor-task double-reward';
+    const tags = isBonus ? '<span class="task-tag tag-double">\u{1F333} \u989D\u5916\u5956\u52B1</span>' : '';
+    const attrLabel = ATTR_NAMES[task.attr];
+    const opts = task.scoreOptions;
+    const rangeText = opts[0] + '~' + opts[opts.length-1] + '\u5206';
+    let rewardHTML = '';
+    if (isChecked) {
+      const s = score >= 0 ? '+' : '';
+      rewardHTML = '<span class="task-score-badge">' + attrLabel + s + score + ' | ' + s + score + '\u5206</span>';
+    } else {
+      rewardHTML = '<span class="reward-attr">' + attrLabel + ' ' + rangeText + '</span>';
+    }
+    const btnText = isChecked ? '\u2705 ' + (score >= 0 ? '+' : '') + score + '\u5206' : '\u2694\uFE0F \u6253\u5361';
+    const card = document.createElement('div');
+    card.className = cardClass;
+    card.dataset.attr = task.attr;
+    card.innerHTML = '<div class="task-info"><div class="task-name">' + task.emoji + ' ' + task.name + ' ' + tags + '</div><div class="task-reward">' + rewardHTML + '</div></div><button class="checkin-btn ' + (isChecked ? 'checked' : '') + '" id="btn-' + task.id + '" onclick="openRatingModal(\'' + task.id + '\')" ' + (isChecked ? 'disabled' : '') + '>' + btnText + '</button>';
+    container.appendChild(card);
+  });
+}
+
+function renderLogs() {
+  const container = document.getElementById('logContainer');
+  const emptyEl = document.getElementById('logEmpty');
+  if (gameData.logs.length === 0) { if (emptyEl) emptyEl.style.display = 'block'; return; }
+  if (emptyEl) emptyEl.style.display = 'none';
+  container.innerHTML = '';
+  gameData.logs.forEach(function(log) {
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.innerHTML = '<span class="log-time">[' + log.time + ']</span> ' + log.message;
+    container.appendChild(entry);
+  });
+  requestAnimationFrame(function() { container.scrollTop = container.scrollHeight; });
+}
+
+function addLog(message) {
+  gameData.logs.push({ time: getDateTimeStr(), message: message });
+  if (gameData.logs.length > MAX_LOGS) gameData.logs = gameData.logs.slice(-MAX_LOGS);
+}
+
+// ============================================
+// SCORING SYSTEM
+// ============================================
+let currentRatingTaskId = null;
+let currentRating = null;
+
+function openRatingModal(taskId) {
+  const cd = gameData.dailyCheckins.tasks[taskId];
+  if (cd && cd.done) return;
+  const task = TASKS.find(function(t) { return t.id === taskId; });
+  if (!task) return;
+  currentRatingTaskId = taskId;
+  currentRating = null;
+  document.getElementById('ratingTaskEmoji').textContent = task.emoji;
+  document.getElementById('ratingTaskName').textContent = task.name;
+  document.getElementById('ratingTaskDesc').textContent = task.ratingDesc || '\u8BF7\u9009\u62E9\u5206\u6570';
+  const attrValEl = document.getElementById('ratingPreviewAttr');
+  const colors = { intelligence: 'var(--neon-blue)', strength: 'var(--neon-green)', charisma: 'var(--neon-pink)' };
+  attrValEl.style.color = colors[task.attr] || 'var(--neon-blue)';
+  const sc = document.getElementById('ratingScores');
+  sc.innerHTML = '';
+  task.scoreOptions.forEach(function(val) {
+    const btn = document.createElement('button');
+    btn.className = 'score-btn' + (val < 0 ? ' negative' : '') + (val === 0 ? ' zero' : '');
+    btn.textContent = (val > 0 ? '+' : '') + val;
+    btn.onclick = function() { selectScore(val); };
+    btn.dataset.score = val;
+    sc.appendChild(btn);
+  });
+  document.getElementById('ratingPreviewAttr').textContent = '-';
+  document.getElementById('ratingPreviewCoins').textContent = '-';
+  document.getElementById('ratingConfirmBtn').disabled = true;
+  document.getElementById('ratingConfirmBtn').textContent = '\u8BF7\u5148\u9009\u62E9\u5206\u6570';
+  document.getElementById('ratingModal').classList.add('active');
+}
+
+function selectScore(val) {
+  currentRating = val;
+  const task = TASKS.find(function(t) { return t.id === currentRatingTaskId; });
+  if (!task) return;
+  document.querySelectorAll('#ratingScores .score-btn').forEach(function(btn) {
+    btn.classList.toggle('active', parseInt(btn.dataset.score) === val);
+  });
+  const sign = val >= 0 ? '+' : '';
+  document.getElementById('ratingPreviewAttr').textContent = ATTR_NAMES[task.attr] + ' ' + sign + val;
+  document.getElementById('ratingPreviewCoins').textContent = sign + val + ' \u5206';
+  const btn = document.getElementById('ratingConfirmBtn');
+  btn.disabled = false;
+  if (val < 0) btn.textContent = '\u786E\u8BA4\u6263 ' + val + ' \u5206';
+  else if (val === 0) btn.textContent = '\u786E\u8BA4 \u00B7 \u4ECA\u5929\u4E00\u822C';
+  else btn.textContent = '\u786E\u8BA4 +' + val + ' \u5206';
+}
+
+function confirmRating() {
+  if (!currentRatingTaskId || currentRating === null) return;
+  const task = TASKS.find(function(t) { return t.id === currentRatingTaskId; });
+  if (!task) return;
+  const score = currentRating;
+  gameData.dailyCheckins.tasks[currentRatingTaskId] = { done: true, rating: score };
+  const attr = gameData.attributes[task.attr];
+  attr.progress += score;
+  if (attr.progress < 0) attr.progress = 0;
+  let leveledUp = false;
+  while (attr.progress >= 100) { attr.progress -= 100; attr.level++; leveledUp = true; }
+  gameData.coins += score;
+  const attrName = ATTR_NAMES[task.attr];
+  const sign = score >= 0 ? '+' : '';
+  let logMsg = '';
+  if (score < 0) logMsg = '\u26A0\uFE0F\u300C' + task.name + '\u300D' + score + '\u5206\uFF01' + attrName + score;
+  else if (task.type === 'bonus') logMsg = '\u{1F333}\u300C' + task.name + '\u300D+' + score + '\u5206\uFF01' + attrName + '+' + score;
+  else logMsg = '\u2694\uFE0F\u300C' + task.name + '\u300D+' + score + '\u5206\uFF01' + attrName + '+' + score;
+  addLog(logMsg);
+  if (leveledUp) { addLog('\u{1F389} ' + ATTR_EMOJIS[task.attr] + ' ' + attrName + '\u5347\u7EA7\u5230 Lv.' + attr.level + '\uFF01'); showLevelUpFlash(); }
+  saveData(gameData);
+  closeModal('ratingModal');
+  renderAll();
+  if (score > 0) { const b = document.getElementById('btn-' + currentRatingTaskId); if (b) showCoinFly(b); }
+  currentRatingTaskId = null;
+  currentRating = null;
+}
+let exchangeQty = 1;
+
+function openExchangeModal() {
+  exchangeQty = 1;
+  updateExchangeUI();
+  document.getElementById('exchangeModal').classList.add('active');
+}
+
+function changeExchangeQty(delta) {
+  exchangeQty = Math.max(1, exchangeQty + delta);
+  updateExchangeUI();
+}
+
+function updateExchangeUI() {
+  const cost = exchangeQty * EXCHANGE_COST;
+  const time = exchangeQty * EXCHANGE_MINUTES;
+  document.getElementById('exchangeQty').textContent = exchangeQty;
+  document.getElementById('exchangeCost').textContent = cost;
+  document.getElementById('exchangeTime').textContent = time + 'min';
+  document.getElementById('exchangeBalance').textContent = gameData.coins;
+  const canAfford = gameData.coins >= cost;
+  document.getElementById('exchangeWarning').style.display = canAfford ? 'none' : 'block';
+  document.getElementById('exchangeConfirmBtn').disabled = !canAfford;
+  document.getElementById('exchangeConfirmBtn').style.opacity = canAfford ? '1' : '0.3';
+}
+
+function confirmExchange() {
+  const cost = exchangeQty * EXCHANGE_COST;
+  const time = exchangeQty * EXCHANGE_MINUTES;
+  if (gameData.coins < cost) return;
+  gameData.coins -= cost;
+  addLog(`🎮 勇者兑换了 ${time} 分钟游戏时间！消耗 ${cost} 分。`);
+  saveData(gameData);
+  renderAll();
+  closeModal('exchangeModal');
+}
+
+function openResetTodayModal() {
+  document.getElementById('resetTodayModal').classList.add('active');
+}
+
+function confirmResetToday() {
+  gameData.dailyCheckins = { date: getTodayStr(), tasks: {} };
+  addLog('🔄 今日打卡记录已重置。');
+  saveData(gameData);
+  renderAll();
+  closeModal('resetTodayModal');
+}
+
+function openResetAllModal() {
+  document.getElementById('resetAllModal').classList.add('active');
+}
+
+function confirmResetAll() {
+  const pwd = document.getElementById('resetPassword').value;
+  if (pwd !== '115119') {
+    document.getElementById('resetPassword').style.borderColor = '#ff5555';
+    document.getElementById('resetPassword').value = '';
+    document.getElementById('resetPassword').placeholder = '密码错误，请重新输入';
+    return;
+  }
+  gameData = getDefaultData();
+  saveData(gameData);
+  renderAll();
+  closeModal('resetAllModal');
+  document.getElementById('resetPassword').value = '';
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('active');
+}
+
+// Close modal on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.classList.remove('active');
+    }
+  });
+});
+
+// ============================================
+// ANIMATIONS
+// ============================================
+function showCoinFly(sourceEl) {
+  const rect = sourceEl.getBoundingClientRect();
+  const coin = document.createElement('div');
+  coin.className = 'coin-fly';
+  coin.textContent = '🏆';
+  coin.style.left = rect.left + rect.width / 2 - 12 + 'px';
+  coin.style.top = rect.top + 'px';
+  document.body.appendChild(coin);
+  
+  setTimeout(() => coin.remove(), 900);
+}
+
+function showLevelUpFlash() {
+  const flash = document.createElement('div');
+  flash.className = 'level-up-flash';
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 700);
+}
+
+// ============================================
+// DATE, HISTORY, EXPORT/IMPORT
+// ============================================
+function renderDate() {
+  const now = new Date();
+  const weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+  const w = weekdays[now.getDay()];
+  document.getElementById('dateDisplay').textContent =
+    now.getFullYear() + '.' + String(m).padStart(2,'0') + '.' + String(d).padStart(2,'0') + ' ' + w;
+}
+
+function toggleHistory() {
+  const panel = document.getElementById('historyPanel');
+  const arrow = document.getElementById('historyArrow');
+  panel.classList.toggle('open');
+  arrow.textContent = panel.classList.contains('open') ? '▲' : '▼';
+}
+
+function renderHistory() {
+  const panel = document.getElementById('historyPanel');
+  const allDays = [];
+  // Add today's data
+  const todayTasks = gameData.dailyCheckins.tasks;
+  const todayEntries = Object.keys(todayTasks).filter(k => todayTasks[k] && todayTasks[k].done);
+  if (todayEntries.length > 0) {
+    allDays.push({ date: gameData.dailyCheckins.date + ' (今天)', tasks: todayTasks });
+  }
+  // Add history
+  gameData.history.forEach(h => allDays.push(h));
+  
+  if (allDays.length === 0) {
+    panel.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:20px;font-size:0.82rem;">暂无历史记录</div>';
+    return;
+  }
+  
+  let html = '';
+  allDays.forEach(day => {
+    html += '<div class="history-day">';
+    html += '<div class="history-date">📆 ' + day.date + '</div>';
+    Object.keys(day.tasks).forEach(taskId => {
+      const rec = day.tasks[taskId];
+      if (!rec || !rec.done) return;
+      const task = TASKS.find(t => t.id === taskId);
+      if (!task) return;
+      const score = rec.rating;
+      const sign = score >= 0 ? '+' : '';
+      html += '<div class="history-task">';
+      html += '<span>' + task.emoji + ' ' + task.name + '</span>';
+      html += '<span class="ht-stars">' + sign + score + '分</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+  panel.innerHTML = html;
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(gameData, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '勇者成长计划_备份_' + getTodayStr() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  addLog('📤 数据已导出备份。');
+  saveData(gameData);
+  renderLogs();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.attributes || !imported.dailyCheckins) {
+        alert('无效的备份文件！');
+        return;
+      }
+      if (!imported.history) imported.history = [];
+      gameData = imported;
+      saveData(gameData);
+      renderAll();
+      addLog('📥 数据已从备份文件恢复。');
+      saveData(gameData);
+      renderLogs();
+    } catch(err) {
+      alert('备份文件格式错误！');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ============================================
+// INIT
+// ============================================
+renderAll();
+</script>
+
+</body>
+</html>
